@@ -2,8 +2,8 @@
  * List prompt example
  */
 
-'use strict';
 var inquirer = require('inquirer');
+var query = require('./queries')
 
 var directionsPrompt = {
   type: 'list',
@@ -31,6 +31,7 @@ function DoPrompt() {
       if (answers.direction === 'View All Employees') {
 
         console.log('Select All');
+        query.viewAll()
         
       } else if (answers.direction === 'View All Employees By Department') {
 

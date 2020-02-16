@@ -22,7 +22,7 @@ connection.connect(function(err) {
 //   createProduct();
 });
 
-viewAll();
+// viewAll();
 
 // function createProduct() {
 //   console.log("Inserting a new product...\n");
