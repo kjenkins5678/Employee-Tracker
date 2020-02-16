@@ -102,3 +102,7 @@ function viewAll() {
     connection.end();
   });
 }
+
+module.exports = {
+  viewAll: viewAll
+}

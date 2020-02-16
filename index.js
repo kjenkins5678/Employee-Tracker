@@ -31,44 +31,30 @@ function DoPrompt() {
       if (answers.direction === 'View All Employees') {
 
         console.log('Select All');
-
-        DoPrompt();
-
+        
       } else if (answers.direction === 'View All Employees By Department') {
 
         console.log('Select all based on department choices');
-
-        DoPrompt();
 
       } else if (answers.direction === 'View All Employees By Manager') {
 
         console.log('Select all based on manager choices');
 
-        DoPrompt();
-
       } else if (answers.direction === 'Add Employee') {
 
         console.log('Update or insert employee');
-
-        DoPrompt();
 
       } else if (answers.direction === 'Add Department') {
 
         console.log('Update or insert department');
 
-        DoPrompt();
-
       } else if (answers.direction === 'Add Role') {
 
         console.log('Update or insert role');
 
-        DoPrompt();
-
       } else if (answers.direction === 'Update Employee Role') {
 
         console.log('Update employees role');
-
-        DoPrompt();
 
       }
         
