@@ -12,7 +12,7 @@ var directionsPrompt = {
   choices: [
     'View All Employees', 
     'View All Employees By Department', 
-    'View All Employees By Manager', 
+    'View All Employees By Role', 
     'Add Employee',
     'Add Department',
     'Add Role',
@@ -41,7 +41,7 @@ function DoPrompt() {
         DoPrompt();
 
       } else if (answers.direction === 'View All Employees By Manager') {
-          
+
         console.log('Select all based on manager choices');
 
         DoPrompt();
