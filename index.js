@@ -1,9 +1,33 @@
-/**
- * List prompt example
- */
-
 var inquirer = require('inquirer');
-var query = require('./queries')
+var mysql = require("mysql");
+const cTable = require('console.table');
+
+var pool = mysql.createPool({
+  connectionLimit: 10,
+  host: "localhost",
+
+  // Your port; if not 3306
+  port: 3306,
+
+  // Your username
+  user: "root",
+
+  // Your password
+  password: "testtest",
+  database: "employees_db"
+});
+
+var sqlViewAll = `SELECT
+  employees.id, 
+  employees.first_name, 
+  employees.last_name, 
+  roles.title,
+  departments.name as department,
+  roles.salary
+  FROM employees 
+  INNER JOIN roles ON employees.role_id = roles.id
+  INNER JOIN departments ON roles.department_id = departments.id`
+
 
 var directionsPrompt = {
   type: 'list',
@@ -20,46 +44,31 @@ var directionsPrompt = {
 ]
 };
 
-function main() {
-  console.log('In the Main Function');
-  DoPrompt();
+function DoPrompt() {
+  inquirer.prompt(directionsPrompt).then(answers => {
+    console.log(answers.direction);
+
+    switch(answers.direction){
+      case "View All Employees":
+        queryDB(sqlViewAll);
+        break;
+      case "Quit":
+        break;
+    }
+  
+  });
 }
 
-function DoPrompt() {
-    inquirer.prompt(directionsPrompt).then(answers => {
-
-      if (answers.direction === 'View All Employees') {
-
-        console.log('Select All');
-        query.viewAll()
-        
-      } else if (answers.direction === 'View All Employees By Department') {
-
-        console.log('Select all based on department choices');
-
-      } else if (answers.direction === 'View All Employees By Manager') {
-
-        console.log('Select all based on manager choices');
-
-      } else if (answers.direction === 'Add Employee') {
-
-        console.log('Update or insert employee');
-
-      } else if (answers.direction === 'Add Department') {
-
-        console.log('Update or insert department');
-
-      } else if (answers.direction === 'Add Role') {
-
-        console.log('Update or insert role');
-
-      } else if (answers.direction === 'Update Employee Role') {
-
-        console.log('Update employees role');
-
-      }
-        
+function queryDB(sql){
+  pool.getConnection(function (err, connection) {
+    if (err) throw err;
+    connection.query(sql, function (err, rows) {
+      connection.release();
+      if (err) throw err;
+      console.table(rows);
+      DoPrompt();
     });
-  }
+  });
+}
 
-main();
+DoPrompt();
