@@ -11,23 +11,20 @@ var pool = mysql.createPool({
   database: "employees_db"
 });
 
-var directionsPrompt = {
-  type: 'list',
-  name: 'direction',
-  message: 'What would you like to do?',
-  choices: [
-    'View All Employees', 
-    'View All Employees By Department', 
-    'View All Employees By Role', 
-    'Add Employee',
-    'Add Department',
-    'Add Role',
-    'Update Employee Role'
-]
-};
-
 function doPrompt() {
-  inquirer.prompt(directionsPrompt).then(answers => {
+  inquirer.prompt({
+    type: 'list',
+    name: 'direction',
+    message: 'What would you like to do?',
+    choices: [
+      'View All Employees', 
+      'View All Employees By Department', 
+      'View All Employees By Role', 
+      'Add Employee',
+      'Add Department',
+      'Add Role',
+      'Update Employee Role'
+  ]}).then(answers => {
     console.log(answers.direction);
 
     switch(answers.direction){
@@ -40,6 +37,9 @@ function doPrompt() {
       case "View All Employees By Role":
         queryDBbyRole();
         break;
+      case "Add Employee":
+        addEmployee();
+        break
     }
   });
 }
@@ -166,6 +166,72 @@ function queryDBbyRole(){
         });
     });
   });
+}
+
+function addEmployee(){
+  //---Query Role Options in DB---
+
+  // SQL Query
+  var sqlSelectRole = `SELECT
+  title, id
+  FROM roles`
+
+  //Create Empty List
+  let justTitles = [];
+  let justTitleId = [];
+
+  //Connection to DB
+  pool.getConnection(function (err, connection) {
+    if (err) throw err;
+
+    //Query DB after connection
+    connection.query(sqlSelectRole, function (err, rows) {
+      if (err) throw err;
+      for (i = 0; i<=rows.length-1; i++){
+        justTitles.push(rows[i].title);
+        justTitleId.push(rows[i].id);
+      }
+
+      //Release Connection
+      connection.release();
+    });
+
+    //---Prompt User---
+    inquirer.prompt([
+      {
+        name: 'firstName',
+        message: 'Enter First Name'
+      },
+      {
+        name: 'lastName',
+        message: 'Enter Last Name'
+      },
+      {
+        type: 'list',
+        name: 'role',
+        message: 'Select Role',
+        choices: justTitles
+      }
+    ]).then(answers => {
+      //Find the role id so we can update the employee table with the role id
+      var index = justTitles.indexOf(answers.role);
+      var roleID = justTitleId[index];
+
+      //Do the SQL to update the table
+      connection.query(
+        "INSERT INTO employees SET ?",
+        {
+          first_name: answers.firstName,
+          last_name: answers.lastName,
+          role_id: roleID,
+        },
+        function(err, res) {
+          if (err) throw err;
+          console.log(res.affectedRows + " sql inserted!\n");
+        }
+      );
+    });
+  })
 }
 
 doPrompt();
