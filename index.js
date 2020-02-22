@@ -37,6 +37,9 @@ function doPrompt() {
       case "View All Employees By Department":
         queryDBbyDept();
         break;
+      case "View All Employees By Role":
+        queryDBbyRole();
+        break;
     }
   });
 }
@@ -109,14 +112,60 @@ function queryDBbyDept(){
               doPrompt();
             });
           });
-
-
-
         });
     });
   });
 }
 
+function queryDBbyRole(){
+  var sqlSelectRole = `SELECT
+  title
+  FROM roles`
+  let titles = [];
+  pool.getConnection(function (err, connection) {
+    if (err) throw err;
 
+    connection.query(sqlSelectRole, function (err, rows) {
+      if (err) throw err;
+      for (i = 0; i<=rows.length-1; i++){
+        titles.push(rows[i].title);
+      }
+      connection.release();
+      
+      inquirer
+        .prompt([{
+          /* Pass your questions in here */
+          type: 'list',
+          name: 'title',
+          message: 'Choose a Title',
+          choices: titles
+        }])
+        .then(answers => {
+          // Use user feedback for... whatever!!
+          console.log(answers.title)
+          var sqlByRole = `SELECT
+          employees.id, 
+          employees.first_name, 
+          employees.last_name, 
+          roles.title,
+          departments.name as department,
+          roles.salary
+          FROM employees 
+          INNER JOIN roles ON employees.role_id = roles.id
+          INNER JOIN departments ON roles.department_id = departments.id
+          WHERE roles.title = "${answers.title}"`
+          pool.getConnection(function (err, connection) {
+            if (err) throw err;
+            connection.query(sqlByRole, function (err, rows) {
+              connection.release();
+              if (err) throw err;
+              console.table(rows)
+              doPrompt();
+            });
+          });
+        });
+    });
+  });
+}
 
 doPrompt();
