@@ -40,6 +40,9 @@ function doPrompt() {
       case "Add Employee":
         addEmployee();
         break
+      case "Add Department":
+        addDepartment()
+        break
     }
   });
 }
@@ -228,10 +231,37 @@ function addEmployee(){
         function(err, res) {
           if (err) throw err;
           console.log(res.affectedRows + " sql inserted!\n");
+          connection.release();
         }
       );
     });
   })
+}
+
+function addDepartment(){
+  inquirer.prompt([
+    {
+      name: 'newDepartment',
+      message: 'Enter the Name of the New Department'
+    }]).then(answers =>{
+      console.log(answers);
+
+      pool.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        connection.query(
+          "INSERT INTO departments SET ?",
+          {
+            name: answers.newDepartment,
+          },
+          function(err, res) {
+            if (err) throw err;
+            console.log(res.affectedRows + " sql inserted!\n");
+            connection.release();
+          }
+        )
+      })
+    })
 }
 
 doPrompt();
