@@ -46,6 +46,9 @@ function doPrompt() {
       case "Add Role":
         addRole();
         break
+      case "Update Employee Role":
+        updateEmplRole();
+        break
     }
   });
 }
@@ -333,5 +336,128 @@ function addRole(){
     })
   })
 }
+
+function updateEmplRole(){
+  //Choose Employee to Update
+
+  var sqlSelectEmployee = `SELECT
+  first_name, last_name, id
+  FROM employees`
+
+  //Create Empty List
+  let emplNames = [];
+  let emplIds = [];
+
+  //Connection to DB
+  pool.getConnection(function (err, connection) {
+    if (err) throw err;
+
+    //Query DB after connection
+    connection.query(sqlSelectEmployee, function (err, rows) {
+      if (err) throw err;
+      for (i = 0; i<=rows.length-1; i++){
+        let name = rows[i].first_name + " " + rows[i].last_name;
+        emplNames.push(name);
+        emplIds.push(rows[i].id);
+      }
+
+      //Release Connection
+      connection.release();
+
+      inquirer.prompt([
+        {
+          type: 'list',
+          name: 'employee',
+          message: 'Select Employee',
+          choices: emplNames
+        }]
+        ).then(answers =>{
+          // console.log(answers);
+          var index = emplNames.indexOf(answers.employee);
+          var emplID = emplIds[index];
+          // console.log("Employee Id: ", emplID)
+    
+          pool.getConnection(function (err, connection) {
+            if (err) throw err;
+    
+            connection.query(
+              "SELECT role_id FROM employees WHERE id = ?",
+              [
+                emplID
+              ],
+              function(err, res) {
+                if (err) throw err;
+                // console.log(res[0].role_id);
+                connection.release();
+
+                let roleTitles = [];
+                let roleIds = [];
+
+                pool.getConnection(function (err, connection) {
+                  if (err) throw err;
+          
+                  connection.query(
+                    "SELECT title, id FROM roles WHERE id !=?",
+                    [
+                      res[0].role_id
+                    ],
+                    function(err, res) {
+                      if (err) throw err;
+                      connection.release();
+
+                      for (i = 0; i <= res.length-1; i++){
+                        roleTitles.push(res[i].title);
+                        roleIds.push(res[i].id);
+                      }
+
+                      inquirer.prompt([
+                        {
+                          type: 'list',
+                          name: 'newRole',
+                          message: 'Select New Role',
+                          choices: roleTitles
+                        }]
+                        ).then(answers =>{
+                          // console.log(answers);
+                          var index = roleTitles.indexOf(answers.newRole);
+                          var newRoleID = roleIds[index];
+                          console.log("New Role Id: ", newRoleID);
+
+                          pool.getConnection(function (err, connection) {
+                            if (err) throw err;
+                    
+                            connection.query(
+                              "UPDATE employees SET ? WHERE ?",
+                              [
+                                {
+                                  role_id: newRoleID
+                                },
+                                {
+                                  id: emplID
+                                }  
+                              ],
+                              function(err, res) {
+                                if (err) throw err;
+                                connection.release();
+
+                                console.log("Role Updated");
+                              }
+                              )
+                            })
+                        })
+                    }
+                  )
+                })
+              }
+            )
+          })
+        })
+      });
+    });
+
+  //List Role Options
+
+  //Update the RoleID in the Employee Table
+  }
 
 doPrompt();
