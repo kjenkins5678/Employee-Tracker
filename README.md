@@ -7,3 +7,7 @@ Employee-Tracker is a CLI application that allows users to view and update emplo
 ## Screenshot
 
 ![Employee Tracker Screenshot](screenshot.png)
+
+## How To
+
+`node index`
