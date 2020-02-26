@@ -39,16 +39,16 @@ function doPrompt() {
         break;
       case "Add Employee":
         addEmployee();
-        break
+        break;
       case "Add Department":
         addDepartment();
-        break
+        break;
       case "Add Role":
         addRole();
-        break
+        break;
       case "Update Employee Role":
         updateEmplRole();
-        break
+        break;
     }
   });
 }
@@ -71,6 +71,7 @@ function viewAll(){
       if (err) throw err;
       console.table(rows)
       doPrompt();
+      return;
     });
   });
 }
@@ -119,6 +120,7 @@ function queryDBbyDept(){
               if (err) throw err;
               console.table(rows)
               doPrompt();
+              return;
             });
           });
         });
@@ -170,6 +172,7 @@ function queryDBbyRole(){
               if (err) throw err;
               console.table(rows)
               doPrompt();
+              return;
             });
           });
         });
@@ -238,6 +241,8 @@ function addEmployee(){
           if (err) throw err;
           console.log(res.affectedRows + " sql inserted!\n");
           connection.release();
+          doPrompt();
+          return;
         }
       );
     });
@@ -264,6 +269,8 @@ function addDepartment(){
             if (err) throw err;
             console.log(res.affectedRows + " sql inserted!\n");
             connection.release();
+            doPrompt();
+            return;
           }
         )
       })
@@ -296,43 +303,45 @@ function addRole(){
     });
 
 
-  inquirer.prompt([
-    {
-      name: 'newRole',
-      message: 'Enter the Name of the New Role'
-    },
-    {
-      name: 'salary',
-      message: 'Enter the Salary of the New Role'
-    },
-    {
-      type: 'list',
-      name: 'department',
-      message: 'Select the Department',
-      choices: justNames
-    }]
-    ).then(answers =>{
-      console.log(answers);
-      var index = justNames.indexOf(answers.department);
-      var departmentID = justNamesId[index];
+    inquirer.prompt([
+      {
+        name: 'newRole',
+        message: 'Enter the Name of the New Role'
+      },
+      {
+        name: 'salary',
+        message: 'Enter the Salary of the New Role'
+      },
+      {
+        type: 'list',
+        name: 'department',
+        message: 'Select the Department',
+        choices: justNames
+      }]
+      ).then(answers =>{
+        console.log(answers);
+        var index = justNames.indexOf(answers.department);
+        var departmentID = justNamesId[index];
 
-      pool.getConnection(function (err, connection) {
-        if (err) throw err;
+        pool.getConnection(function (err, connection) {
+          if (err) throw err;
 
-        connection.query(
-          "INSERT INTO roles SET ?",
-          {
-            title: answers.newRole,
-            salary: answers.salary,
-            department_id: departmentID
-          },
-          function(err, res) {
-            if (err) throw err;
-            console.log(res.affectedRows + " sql inserted!\n");
-            connection.release();
-          }
-        )
-      })
+          connection.query(
+            "INSERT INTO roles SET ?",
+            {
+              title: answers.newRole,
+              salary: answers.salary,
+              department_id: departmentID
+            },
+            function(err, res) {
+              if (err) throw err;
+              console.log(res.affectedRows + " sql inserted!\n");
+              connection.release();
+              doPrompt();
+              return;
+            }
+          )
+        })
     })
   })
 }
@@ -441,6 +450,8 @@ function updateEmplRole(){
                                 connection.release();
 
                                 console.log("Role Updated");
+                                doPrompt();
+                                return;
                               }
                               )
                             })
@@ -458,6 +469,6 @@ function updateEmplRole(){
   //List Role Options
 
   //Update the RoleID in the Employee Table
-  }
+}
 
 doPrompt();
